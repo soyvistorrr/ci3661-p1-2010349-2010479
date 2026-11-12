@@ -1,0 +1,8 @@
+.stack-work/
+*.cabal
+*~
+*.o
+*.hi
+dist/
+dist-newstyle/
+.DS_Store
