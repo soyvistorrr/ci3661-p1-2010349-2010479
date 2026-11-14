@@ -30,9 +30,9 @@ newtype Parser a = Parser { runParser :: String -> [(a, String)] }
 -- | Ejecuta un parser sobre una cadena. Devuelve Just a si consumio todo con exito
 parsear :: Parser a -> String -> Maybe a
 parsear p input =
-    case runParser p input of
-        []              -> Nothing      -- Fallo completamente
-        ((res, _):_)    -> Just res     -- Tuvo exito con al menos una interpretacion
+    case [ res | (res, resto) <- runParser p input, all isSpace resto ] of
+        (res:_) -> Just res
+        []      -> Nothing
 
 instance Functor Parser where
     fmap f (Parser p) = Parser $ \input ->

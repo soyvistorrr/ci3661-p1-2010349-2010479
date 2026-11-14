@@ -102,16 +102,16 @@ data Comando = Ir Direccion
              | Salir
     deriving (Eq, Show)
 
--- | Errores semanticos y de sintaxis
+-- | Errores de sintaxis y validacion semantica
 data ErrorMundo
-    = ErrorSintaxis Int String              -- V1: linea y detalle
-    | SalaDuplicada IdSala                   -- V2
-    | InicioInexistente IdSala               -- V3
-    | MetaInvalida String                    -- V4
-    | SalidaInvalida IdSala Direccion String -- V5
-    | ObjetoDuplicado IdObjeto               -- V6
-    | ObjetoEnSalaInexistente IdObjeto IdSala-- V7
-    | ElementoInalcanzable String            -- V8
-    | MetaInalcanzable String                -- V9
-    | CicloSalidasImposible String           -- V10
+    = ErrorSintaxis Int String                         -- V1: linea y detalle
+    | IdentificadorDuplicado String                    -- V2: dos salas o dos objetos con el mismo ID
+    | SalidaDestinoInexistente IdSala Direccion IdSala -- V3: salida hacia una sala que no existe
+    | SalidaObjetoInexistente IdSala Direccion IdObjeto-- V4: salida que requiere un objeto que no existe
+    | SalidaDireccionDuplicada IdSala Direccion        -- V5: dos salidas en la misma direccion en una sala
+    | ObjetoEnSalaNoDefinido IdSala IdObjeto           -- V6: sala contiene un objeto no definido
+    | ObjetoUbicadoMultiplesVeces IdObjeto             -- V7: objeto en mas de una sala o repetido en la misma
+    | InicioOMetaInexistente String                    -- V8: INICIO o META con sala u objeto inexistente
+    | SalaInalcanzable IdSala                          -- V9: sala no alcanzable desde INICIO
+    | ObjetoNecesarioNoColocado IdObjeto               -- V10: objeto necesario no colocado en ninguna sala
     deriving (Eq, Show)
