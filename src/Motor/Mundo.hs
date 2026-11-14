@@ -1,10 +1,13 @@
 module Motor.Mundo (
-    leerMundo
+    leerMundo,
+    formatearError
 ) where
 
 import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
 import Control.Applicative ((<|>), empty)
 import Data.Char (toLower, isSpace)
+import Data.Maybe (mapMaybe)
 
 import Motor.Tipos
 import Motor.Reconocedor
@@ -266,6 +269,134 @@ parsearBloqueObjeto ((numL, primera):resto) =
         | otherwise =
             recolectar ls ds lzs (errs ++ [ErrorSintaxis n ("Linea invalida en OBJETO: " ++ l)])
 
+-- VALIDACION SEMANTICA
+
+-- | Devuelve los elementos que aparecen mas de una vez en la lista
+buscarDuplicados :: Ord a => [a] -> [a]
+buscarDuplicados = reverse . snd . foldl paso (Set.empty, [])
+    where
+        paso (vistos, dups) x
+            | Set.member x vistos =
+                let dups' = if x `elem` dups then dups else x : dups
+                in (vistos, dups')
+            | otherwise = (Set.insert x vistos, dups)
+
+-- | Dos salas o dos objetos con el mismo identificador
+validarDuplicados :: [Sala] -> [Objeto] -> [ErrorMundo]
+validarDuplicados salas objetos =
+    let dupsSalas = [ IdentificadorDuplicado ("sala repetida: " ++ unIdSala sId)
+            | sId <- buscarDuplicados (map idSala salas) ]
+        dupsObjs = [ IdentificadorDuplicado ("objeto repetido: " ++ unIdObjeto oId)
+            | oId <- buscarDuplicados (map idObjeto objetos) ]
+    in dupsSalas ++ dupsObjs
+
+-- | Validacion de todas las salidas de cada sala
+validarSalidas :: Mundo -> [ErrorMundo] 
+validarSalidas mundo = concatMap revisarSala (Map.elems (salasMundo mundo))
+    where
+        salas   = salasMundo mundo
+        objs    = objetosMundo mundo
+        revisarSala s =
+            let sId = idSala s
+                sals = salidasSala s
+                errDest =   [ SalidaDestinoInexistente sId (dirSalida sal) (destinoSalida sal)
+                            | sal <- sals
+                            , not (Map.member (destinoSalida sal) salas) ]
+                errObj  =   [ SalidaObjetoInexistente sId (dirSalida sal) req
+                            | sal <- sals
+                            , Just req <- [requiereItem sal]
+                            , not (Map.member req objs) ]
+                errDir  =   [ SalidaDireccionDuplicada sId d
+                            | d <- buscarDuplicados (map dirSalida sals) ]
+            in errDest ++ errObj ++ errDir
+
+-- | Objetos en sala no definidos y ubicados multiples veces
+validarObjetosEnSalas :: Mundo -> [ErrorMundo]
+validarObjetosEnSalas mundo =
+    let listaSalas      = Map.elems (salasMundo mundo)
+        objs            = objetosMundo mundo
+        errNoDef        =   [ ObjetoEnSalaNoDefinido (idSala s) oId 
+                            | s <- listaSalas
+                            , oId <- objsIniciales s
+                            , not (Map.member oId objs) ]
+        todosColocados  = concatMap objsIniciales listaSalas
+        errMult         =   [ ObjetoUbicadoMultiplesVeces oId
+                            | oId <- buscarDuplicados todosColocados ]
+    in errNoDef ++ errMult
+
+-- | INICIO o META con una sala o un objeto inexistente
+validarInicioYMeta :: Mundo -> [ErrorMundo]
+validarInicioYMeta mundo =
+    let salas   = salasMundo mundo
+        objs    = objetosMundo mundo
+        errIni  =   if Map.member (inicioMundo mundo) salas
+                    then []
+                    else [InicioOMetaInexistente ("INICIO apunta a sala inexistente: " ++ unIdSala (inicioMundo mundo))]
+        errMeta = case metaMundo mundo of
+            LlegarA dest ->
+                if Map.member dest salas
+                then []
+                else [InicioOMetaInexistente ("META apunta a sala inexistente: " ++ unIdSala dest)]
+            LlevarA oId dest -> 
+                let eObj    =   if Map.member oId objs
+                                then []
+                                else [InicioOMetaInexistente ("META requiere objeto inexistente: " ++ unIdObjeto oId)]
+                    eSala   =   if Map.member dest salas
+                                then []
+                                else [InicioOMetaInexistente ("META apunta a sala inexistente: " ++ unIdSala dest)]
+                in eObj ++ eSala
+    in errIni ++ errMeta
+
+-- | Salas no alcanzables desde INICIO siguiendo salidas (ignorando requisitos)
+validarAlcanzabilidad :: Mundo -> [ErrorMundo]
+validarAlcanzabilidad mundo =
+    let salas = salasMundo mundo
+        ini   = inicioMundo mundo
+    in case Map.lookup ini salas of
+        Nothing -> []
+        Just _  ->
+            let visitados = explorar (Set.singleton ini) [ini]
+            in [ SalaInalcanzable sId
+               | sId <- Map.keys salas
+               , not (Set.member sId visitados) ]
+  where
+    explorar visitados [] = visitados
+    explorar visitados (actual:cola) =
+        let vecinos = case Map.lookup actual (salasMundo mundo) of
+                Nothing -> []
+                Just s  -> map destinoSalida (salidasSala s)
+            nuevos = filter (\v -> Map.member v (salasMundo mundo) 
+                            && not (Set.member v visitados)) vecinos
+            visitados' = foldr Set.insert visitados nuevos
+        in explorar visitados' (cola ++ nuevos)
+
+-- | Objetos necesarios no colocados en ninguna sala
+validarObjetosNecesarios :: Mundo -> [ErrorMundo]
+validarObjetosNecesarios mundo =
+    let objs      = objetosMundo mundo
+        colocados = Set.fromList (concatMap objsIniciales (Map.elems (salasMundo mundo)))
+        reqsMeta  = case metaMundo mundo of
+            LlegarA _     -> []
+            LlevarA oId _ -> [oId]
+        reqsSal   = [ req
+                    | s   <- Map.elems (salasMundo mundo)
+                    , req <- mapMaybe requiereItem (salidasSala s) ]
+        necesariosDefinidos = Set.toList $ Set.fromList $
+            filter (\oId -> Map.member oId objs) (reqsMeta ++ reqsSal)
+    in [ ObjetoNecesarioNoColocado oId
+       | oId <- necesariosDefinidos
+       , not (Set.member oId colocados) ]
+
+-- | Ejecuta todas las validaciones semanticas acumulando todos los errores
+validarMundo :: [Sala] -> [Objeto] -> Mundo -> [ErrorMundo]
+validarMundo salas objetos mundo =
+       validarDuplicados salas objetos
+    ++ validarSalidas mundo
+    ++ validarObjetosEnSalas mundo
+    ++ validarInicioYMeta mundo
+    ++ validarAlcanzabilidad mundo
+    ++ validarObjetosNecesarios mundo
+
 -- FUNCIÓN PRINCIPAL PURA: leerMundo
 
 -- | Recibe el contenido del archivo de mundo, lo reconoce y valida
@@ -290,7 +421,11 @@ leerMundo contenido =
                 ([], Right (tit, ini, met)) ->
                     let mapaSalas   = Map.fromList [ (idSala s, s) | s <- salas ]
                         mapaObjetos = Map.fromList [ (idObjeto o, o) | o <- objetos ]
-                    in Right (Mundo tit ini met mapaSalas mapaObjetos)
+                        mundo       = Mundo tit ini met mapaSalas mapaObjetos
+                        errsSem      = validarMundo salas objetos mundo
+                    in  if null errsSem
+                        then Right mundo
+                        else Left errsSem
                 _ -> Left todosErroresSintaxis
   where
     procesarBloques [] accSalas accObjs accErrs = (accSalas, accObjs, accErrs)
@@ -309,3 +444,28 @@ leerMundo contenido =
                 | otherwise ->
                     let err = ErrorSintaxis n ("Bloque desconocido que inicia con: " ++ primera)
                     in procesarBloques bs accSalas accObjs (accErrs ++ [err])
+
+formatearError :: ErrorMundo -> String
+formatearError err = case err of
+    ErrorSintaxis n msg ->
+        "Error: [Linea " ++ show n ++ "] " ++ msg 
+    IdentificadorDuplicado info ->
+        "Error: Identificador duplicado (" ++ info ++ ")"
+    SalidaDestinoInexistente orig dir dest ->
+        "Error: La salida " ++ show dir ++ " de la sala '" ++ unIdSala orig
+        ++ "' apunta a una sala inexistente '" ++ unIdSala dest ++ "'"
+    SalidaObjetoInexistente orig dir obj ->
+        "Error: La salida " ++ show dir ++ " de la sala '" ++ unIdSala orig
+        ++ "' requiere un objeto inexistente '" ++ unIdObjeto obj ++ "'"
+    SalidaDireccionDuplicada sId dir ->
+        "Error: La sala '" ++ unIdSala sId ++ "' tiene mas de una salida hacia " ++ show dir
+    ObjetoEnSalaNoDefinido sId obj ->
+        "Error: La sala '" ++ unIdSala sId ++ "' contiene un objeto no definido '" ++ unIdObjeto obj ++ "'"
+    ObjetoUbicadoMultiplesVeces obj ->
+        "Error: El objeto '" ++ unIdObjeto obj ++ "' esta colocado mas de una vez"
+    InicioOMetaInexistente msg ->
+        "Error: " ++ msg
+    SalaInalcanzable sId ->
+        "Error: La sala '" ++ unIdSala sId ++ "' no es alcanzable desde INICIO"
+    ObjetoNecesarioNoColocado obj ->
+        "Error: El objeto necesario '" ++ unIdObjeto obj ++ "' no esta colocado en ninguna sala"
