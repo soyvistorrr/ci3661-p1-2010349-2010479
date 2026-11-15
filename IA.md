@@ -9,7 +9,7 @@ En cumplimiento con lo estipulado en la **Sección 8.4** del enunciado del proye
 
 ## 1. Herramientas Utilizadas y Propósito
 
-Durante el desarrollo utilizamos el asistente **Antigravity (Google DeepMind)** principalmente para:
+Durante el desarrollo utilizamos el asistente **Antigravity (Google DeepMind)** (con los modelos **Gemini 3.8 Pro** y **Gemini 3.8 Flash**) principalmente para:
 
 1. **Comprensión de tipos, instancias y combinadores en Haskell:**
    * Explicación línea por línea del funcionamiento de `newtype Parser` sobre `ReadS`, las instancias `Functor`, `Applicative`, `Monad` y `Alternative`, tipos algebraicos (`data` / `newtype`) y el uso seguro de `readMaybe` en lugar de funciones parciales.
