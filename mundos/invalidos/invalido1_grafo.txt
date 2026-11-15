@@ -1,0 +1,32 @@
+# Este mundo contiene 3 errores semanticos de grafo y duplicados:
+# - V2: Dos salas con el mismo identificador (pasillo) y dos objetos con el mismo identificador (antorcha)
+# - V3: Una salida hacia una sala que no existe (sotano)
+# - V5: Una sala con dos salidas en la misma direccion (norte)
+
+MUNDO: Laberinto de Grafos Rotos
+INICIO: entrada
+META: llegar a salida_final
+---
+OBJETO: antorcha
+DESC: Una antorcha de madera.
+---
+OBJETO: antorcha
+DESC: Una antorcha duplicada.
+---
+SALA: entrada
+DESC: La entrada al laberinto.
+SALIDA: norte -> pasillo
+SALIDA: norte -> sotano
+---
+SALA: pasillo
+DESC: Un pasillo estrecho.
+SALIDA: sur -> entrada
+SALIDA: este -> salida_final
+---
+SALA: pasillo
+DESC: Otra sala llamada pasillo que duplica el identificador.
+SALIDA: sur -> entrada
+---
+SALA: salida_final
+DESC: La sala de salida.
+SALIDA: oeste -> pasillo

@@ -1,0 +1,21 @@
+# Este mundo contiene errores de sintaxis V1 especificos de la Variante 0 (Oscuridad):
+# - V1 (Variante 0): Campo OSCURA con valor invalido en sala (OSCURA: tal_vez)
+# - V1 (Variante 0): Campo LUZ repetido en bloque de objeto (antorcha)
+
+MUNDO: Catacumbas con Oscuridad Rota
+INICIO: entrada
+META: llegar a cripta
+---
+OBJETO: antorcha
+DESC: Una antorcha magica.
+LUZ: si
+LUZ: no
+---
+SALA: entrada
+DESC: La entrada a las catacumbas.
+OSCURA: tal_vez
+SALIDA: norte -> cripta
+---
+SALA: cripta
+DESC: La cripta final.
+SALIDA: sur -> entrada

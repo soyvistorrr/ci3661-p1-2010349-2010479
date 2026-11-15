@@ -21,7 +21,6 @@ import Data.List (find, intercalate)
 import Motor.Tipos (
     IdSala(..),
     IdObjeto(..),
-    Direccion(..),
     Salida(..),
     Sala(..),
     Objeto(..),
