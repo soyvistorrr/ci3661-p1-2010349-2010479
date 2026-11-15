@@ -3,7 +3,7 @@ version:             0.1.0.0
 synopsis:            Motor de Aventuras de Texto en Haskell
 description:         Proyecto 1 para CI-3661 Laboratorio de Lenguajes de Programacion I (USB)
 author:              Victor Hernandez (20-10349) y Angel Pacheco (20-10479)
-maintainer:          20-10349@usb.ve, angelp@usb.ve
+maintainer:          20-10349@usb.ve, 20-10479@usb.ve
 copyright:           2026 Universidad Simon Bolivar
 
 dependencies:
