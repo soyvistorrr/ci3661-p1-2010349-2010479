@@ -1,6 +1,7 @@
 module Main (main) where
 
 import Test.HUnit
+import System.Directory (doesFileExist)
 import System.Exit (exitFailure, exitSuccess)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -58,6 +59,77 @@ contenidoMundoPrueba = unlines
   , "SALA: altar"
   , "DESC: El altar sagrado ceremonial."
   , "SALIDA: sur -> pasillo"
+  ]
+
+-- | Mundo de ejemplo oficial de la catedra (entrega.txt) embebido como respaldo
+mundoEjemploCatedra :: String
+mundoEjemploCatedra = unlines
+  [ "MUNDO: Entrega a última hora"
+  , "INICIO: estacionamiento"
+  , "META: llevar proyecto_impreso a oficina_del_profesor"
+  , "---"
+  , "OBJETO: carnet"
+  , "DESC: Tu carnet estudiantil. La foto es de primer año y no te pareces."
+  , "---"
+  , "OBJETO: moneda"
+  , "DESC: Una moneda. No alcanza para nada, pero brilla bonito."
+  , "---"
+  , "OBJETO: memoria_usb"
+  , "DESC: Una memoria con el archivo proyecto_final_FINAL_v3.pdf."
+  , "---"
+  , "OBJETO: llave_del_ascensor"
+  , "DESC: La llave del ascensor de servicio, con un llavero de Kyubey."
+  , "---"
+  , "OBJETO: proyecto_impreso"
+  , "DESC: Tu proyecto impreso, todavía tibio."
+  , "---"
+  , "SALA: estacionamiento"
+  , "DESC: El estacionamiento de Básico. Son las 11:40 y la entrega es a las 12:00."
+  , "SALIDA: norte -> plaza"
+  , "OBJETO: carnet"
+  , "---"
+  , "SALA: plaza"
+  , "DESC: La plaza del rectorado. Un gato duerme sobre un banco."
+  , "SALIDA: sur -> estacionamiento"
+  , "SALIDA: norte -> pasillo_mys"
+  , "SALIDA: este -> cafetin"
+  , "SALIDA: oeste -> biblioteca requiere carnet"
+  , "---"
+  , "SALA: cafetin"
+  , "DESC: Huele a café recalentado. Nadie atiende."
+  , "SALIDA: oeste -> plaza"
+  , "OBJETO: moneda"
+  , "---"
+  , "SALA: biblioteca"
+  , "DESC: Silencio absoluto. Alguien olvidó algo en una mesa."
+  , "SALIDA: este -> plaza"
+  , "OBJETO: memoria_usb"
+  , "---"
+  , "SALA: pasillo_mys"
+  , "DESC: Un pasillo largo con carteleras llenas de anuncios viejos."
+  , "SALIDA: sur -> plaza"
+  , "SALIDA: este -> ldc requiere carnet"
+  , "SALIDA: oeste -> fotocopiadora requiere memoria_usb"
+  , "SALIDA: arriba -> segundo_piso requiere llave_del_ascensor"
+  , "---"
+  , "SALA: ldc"
+  , "DESC: El laboratorio. Todas las máquinas están ocupadas compilando Haskell."
+  , "SALIDA: oeste -> pasillo_mys"
+  , "OBJETO: llave_del_ascensor"
+  , "---"
+  , "SALA: fotocopiadora"
+  , "DESC: La fotocopiadora. Por milagro, la impresora funciona."
+  , "SALIDA: este -> pasillo_mys"
+  , "OBJETO: proyecto_impreso"
+  , "---"
+  , "SALA: segundo_piso"
+  , "DESC: El segundo piso. Al norte, una puerta con tu nombre en la lista de entregas."
+  , "SALIDA: abajo -> pasillo_mys"
+  , "SALIDA: norte -> oficina_del_profesor"
+  , "---"
+  , "SALA: oficina_del_profesor"
+  , "DESC: La oficina del profesor. Hay una bandeja que dice «Entregas»."
+  , "SALIDA: sur -> segundo_piso"
   ]
 
 -- | Obtiene el mundo de prueba garantizando que parsea correctamente
@@ -289,7 +361,10 @@ testValidacionMundoOficial = TestCase $ do
 -- Resultado esperado: Right Mundo con 9 salas y 5 objetos.
 testValidacionEjemploEnunciado :: Test
 testValidacionEjemploEnunciado = TestCase $ do
-  contenido <- readFile "../material/mundos/entrega.txt"
+  existeExt <- doesFileExist "../material/mundos/entrega.txt"
+  contenido <- if existeExt
+    then readFile "../material/mundos/entrega.txt"
+    else return mundoEjemploCatedra
   case leerMundo contenido of
     Left errs -> assertFailure ("entrega.txt no debio tener errores: " ++ show errs)
     Right m   -> do
