@@ -1,4 +1,4 @@
-# Este mundo contiene 3 errores semanticos de grafo y duplicados:
+# Este mundo contiene 4 errores semanticos de grafo y duplicados:
 # - V2: Dos salas con el mismo identificador (pasillo) y dos objetos con el mismo identificador (antorcha)
 # - V3: Una salida hacia una sala que no existe (sotano)
 # - V5: Una sala con dos salidas en la misma direccion (norte)
@@ -26,6 +26,7 @@ SALIDA: este -> salida_final
 SALA: pasillo
 DESC: Otra sala llamada pasillo que duplica el identificador.
 SALIDA: sur -> entrada
+SALIDA: este -> salida_final
 ---
 SALA: salida_final
 DESC: La sala de salida.

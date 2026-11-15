@@ -14,10 +14,11 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    [flag, ruta] | flag `elem` ["-validar", "--validar"] -> modoValidar ruta
-    [ruta]                                               -> modoJuego ruta
+    ["-validar", ruta]  -> modoValidar ruta
+    ["--validar", ruta] -> modoValidar ruta
+    [ruta]              -> modoJuego ruta
     _                  -> do
-      putStrLn "Uso: aventura [-validar] <archivo-mundo>"
+      putStrLn "Uso: aventura [--validar | -validar] <archivo-mundo>"
       exitWith (ExitFailure 1)
 
 -- | Modo de validacion estatica del mundo (Seccion 6 del enunciado)

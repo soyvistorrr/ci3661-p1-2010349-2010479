@@ -5,6 +5,7 @@ import System.Exit (exitFailure, exitSuccess)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.List (isInfixOf)
+import GHC.IO.Encoding (setLocaleEncoding, utf8)
 
 import Motor.Tipos
 import Motor.Comandos (leerComando)
@@ -283,45 +284,57 @@ testValidacionMundoOficial = TestCase $ do
       assertBool "Tiene al menos 8 salas" (Map.size (salasMundo m) >= 8)
       assertBool "Tiene al menos 6 objetos" (Map.size (objetosMundo m) >= 6)
 
+-- | Caso de uso: Validacion del mundo de ejemplo de la catedra (entrega.txt).
+-- Qué se espera probar: Que el reconocedor acepta el mundo de ejemplo del enunciado (Seccion 8.2).
+-- Resultado esperado: Right Mundo con 9 salas y 5 objetos.
+testValidacionEjemploEnunciado :: Test
+testValidacionEjemploEnunciado = TestCase $ do
+  contenido <- readFile "../material/mundos/entrega.txt"
+  case leerMundo contenido of
+    Left errs -> assertFailure ("entrega.txt no debio tener errores: " ++ show errs)
+    Right m   -> do
+      assertEqual "entrega.txt tiene 9 salas" 9 (Map.size (salasMundo m))
+      assertEqual "entrega.txt tiene 5 objetos" 5 (Map.size (objetosMundo m))
+
 -- | Caso de uso: Validacion de mundos invalidos con errores de grafo (invalido1).
--- Qué se espera probar: Deteccion acumulada de identificadores duplicados y salidas invalidas.
--- Resultado esperado: Left con al menos 4 errores reportados juntos.
+-- Qué se espera probar: Deteccion acumulada de identificadores duplicados (2 V2), V3 y V5.
+-- Resultado esperado: Left con exactamente 4 errores reportados juntos.
 testValidacionInvalidoGrafo :: Test
 testValidacionInvalidoGrafo = TestCase $ do
   contenido <- readFile "mundos/invalidos/invalido1_grafo.txt"
   case leerMundo contenido of
     Right _   -> assertFailure "invalido1_grafo debio fallar pero fue aceptado"
-    Left errs -> assertBool "Reporta al menos 3 errores de grafo" (length errs >= 3)
+    Left errs -> assertEqual "Reporta exactamente 4 errores de grafo" 4 (length errs)
 
 -- | Caso de uso: Validacion de mundos invalidos con salas inalcanzables (invalido2).
--- Qué se espera probar: Deteccion de V8, V9 y V10 acumulados.
--- Resultado esperado: Left con multiples errores de alcanzabilidad.
+-- Qué se espera probar: Deteccion de V8 (2 errores), V9 (1 error) y V10 (1 error) acumulados.
+-- Resultado esperado: Left con exactamente 4 errores de alcanzabilidad.
 testValidacionInvalidoAlcanzabilidad :: Test
 testValidacionInvalidoAlcanzabilidad = TestCase $ do
   contenido <- readFile "mundos/invalidos/invalido2_alcanzabilidad.txt"
   case leerMundo contenido of
     Right _   -> assertFailure "invalido2_alcanzabilidad debio fallar"
-    Left errs -> assertBool "Reporta errores de alcanzabilidad" (length errs >= 3)
+    Left errs -> assertEqual "Reporta exactamente 4 errores de alcanzabilidad" 4 (length errs)
 
 -- | Caso de uso: Validacion de sintaxis corrupta en la Variante 0 (invalido3).
 -- Qué se espera probar: Deteccion de V1 con numero de linea en campos OSCURA y LUZ.
--- Resultado esperado: Left con errores de sintaxis indicando la linea.
+-- Resultado esperado: Left con exactamente 2 errores de sintaxis indicando la linea.
 testValidacionInvalidoVariante :: Test
 testValidacionInvalidoVariante = TestCase $ do
   contenido <- readFile "mundos/invalidos/invalido3_variante0.txt"
   case leerMundo contenido of
     Right _   -> assertFailure "invalido3_variante0 debio fallar por sintaxis"
-    Left errs -> assertBool "Reporta errores de sintaxis en variante" (length errs >= 2)
+    Left errs -> assertEqual "Reporta exactamente 2 errores de sintaxis en variante" 2 (length errs)
 
 -- | Caso de uso: Validacion de objetos inconsistentes o duplicados (invalido4).
 -- Qué se espera probar: Deteccion de V4 (llave no definida), V6 y V7 (objeto duplicado).
--- Resultado esperado: Left con al menos 3 errores.
+-- Resultado esperado: Left con exactamente 3 errores.
 testValidacionInvalidoObjetos :: Test
 testValidacionInvalidoObjetos = TestCase $ do
   contenido <- readFile "mundos/invalidos/invalido4_objetos.txt"
   case leerMundo contenido of
     Right _   -> assertFailure "invalido4_objetos debio fallar"
-    Left errs -> assertBool "Reporta errores semanticos de objetos" (length errs >= 3)
+    Left errs -> assertEqual "Reporta exactamente 3 errores semanticos de objetos" 3 (length errs)
 
 -- ============================================================================
 -- EJECUTOR PRINCIPAL DE PRUEBAS
@@ -330,38 +343,40 @@ testValidacionInvalidoObjetos = TestCase $ do
 suitePruebas :: Test
 suitePruebas = TestList
   [ -- Grupo 1: Comandos (8 pruebas)
-    "testMirar"                         ~: testMirar
-  , "testInventario"                    ~: testInventario
-  , "testTomarSinonimos"                ~: testTomarSinonimos
-  , "testDireccionesAbreviadas"         ~: testDireccionesAbreviadas
-  , "testToleranciaMayusculasYEspacios" ~: testToleranciaMayusculasYEspacios
-  , "testPersistenciaRuta"              ~: testPersistenciaRuta
-  , "testRechazoComandosLargos"         ~: testRechazoComandosLargos
-  , "testComandosInvalidos"             ~: testComandosInvalidos
+    "testMirar"                            ~: testMirar
+  , "testInventario"                       ~: testInventario
+  , "testTomarSinonimos"                   ~: testTomarSinonimos
+  , "testDireccionesAbreviadas"            ~: testDireccionesAbreviadas
+  , "testToleranciaMayusculasYEspacios"    ~: testToleranciaMayusculasYEspacios
+  , "testPersistenciaRuta"                 ~: testPersistenciaRuta
+  , "testRechazoComandosLargos"            ~: testRechazoComandosLargos
+  , "testComandosInvalidos"                ~: testComandosInvalidos
 
     -- Grupo 2: Núcleo y Movimiento (4 pruebas)
-  , "testMovimientoNormal"              ~: testMovimientoNormal
-  , "testPuertaBloqueadaSinLlave"       ~: testPuertaBloqueadaSinLlave
-  , "testDesbloqueoConLlave"            ~: testDesbloqueoConLlave
-  , "testVictoriaLlevarA"               ~: testVictoriaLlevarA
+  , "testMovimientoNormal"                 ~: testMovimientoNormal
+  , "testPuertaBloqueadaSinLlave"          ~: testPuertaBloqueadaSinLlave
+  , "testDesbloqueoConLlave"               ~: testDesbloqueoConLlave
+  , "testVictoriaLlevarA"                  ~: testVictoriaLlevarA
 
     -- Grupo 3: Variante 0 - Oscuridad (5 pruebas)
-  , "testMirarEnOscuridad"              ~: testMirarEnOscuridad
-  , "testTomarEnOscuridad"              ~: testTomarEnOscuridad
-  , "testAvanzarACiegas"                ~: testAvanzarACiegas
-  , "testColisionEnOscuridad"           ~: testColisionEnOscuridad
-  , "testIluminacionDesdeElSuelo"       ~: testIluminacionDesdeElSuelo
+  , "testMirarEnOscuridad"                 ~: testMirarEnOscuridad
+  , "testTomarEnOscuridad"                 ~: testTomarEnOscuridad
+  , "testAvanzarACiegas"                   ~: testAvanzarACiegas
+  , "testColisionEnOscuridad"              ~: testColisionEnOscuridad
+  , "testIluminacionDesdeElSuelo"          ~: testIluminacionDesdeElSuelo
 
-    -- Grupo 4: Validación de Mundos (5 pruebas)
-  , "testValidacionMundoOficial"        ~: testValidacionMundoOficial
-  , "testValidacionInvalidoGrafo"       ~: testValidacionInvalidoGrafo
+    -- Grupo 4: Validación de Mundos (6 pruebas)
+  , "testValidacionMundoOficial"           ~: testValidacionMundoOficial
+  , "testValidacionEjemploEnunciado"       ~: testValidacionEjemploEnunciado
+  , "testValidacionInvalidoGrafo"          ~: testValidacionInvalidoGrafo
   , "testValidacionInvalidoAlcanzabilidad" ~: testValidacionInvalidoAlcanzabilidad
-  , "testValidacionInvalidoVariante"    ~: testValidacionInvalidoVariante
-  , "testValidacionInvalidoObjetos"     ~: testValidacionInvalidoObjetos
+  , "testValidacionInvalidoVariante"       ~: testValidacionInvalidoVariante
+  , "testValidacionInvalidoObjetos"        ~: testValidacionInvalidoObjetos
   ]
 
 main :: IO ()
 main = do
+  setLocaleEncoding utf8
   conteos <- runTestTT suitePruebas
   if errors conteos + failures conteos > 0
     then exitFailure

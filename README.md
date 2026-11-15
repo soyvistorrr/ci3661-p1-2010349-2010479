@@ -93,7 +93,28 @@ stack run aventura -- ../material/mundos/entrega.txt < ../material/guiones/entre
 
 ---
 
-## 5. Ejecución de Pruebas Unitarias
+## 5. Manual de Comandos del Juego
+
+El analizador léxico en `Motor.Comandos` normaliza espacios y es insensible a mayúsculas/minúsculas. Admite las órdenes estándar del enunciado y las facilidades adoptadas por el equipo (ADR D6):
+
+| Acción | Comando Principal | Sinónimos / Abreviaturas | Descripción y Reglas de Uso |
+| :--- | :--- | :--- | :--- |
+| **Observar** | `mirar` | `m` | Describe la sala actual, los objetos en el suelo y las salidas visibles. *(En salas oscuras sin luz, informa penumbra).* |
+| **Moverse** | `ir <dirección>` | `<dirección>` directa, o abreviaturas: `n`, `s`, `e`, `o`, `arr`, `ab` | Desplaza al jugador hacia esa sala. Ejemplos válidos: `ir norte`, `norte`, `n`, `abajo`, `ab`. Si la salida requiere una llave, la abre automáticamente si está en el inventario. *(En oscuridad, permite avanzar a ciegas o colisionar con paredes).* |
+| **Recoger** | `tomar <objeto>` | `coger <objeto>` | Traslada un objeto del suelo al inventario. Requiere exactamente el identificador del objeto (ej: `tomar linterna`, `coger carnet_estudiantil`). |
+| **Soltar** | `soltar <objeto>` | — | Deja un objeto del inventario en el suelo de la sala actual. *(Si el objeto emite luz, ilumina la sala desde el suelo).* |
+| **Examinar** | `examinar <objeto>` | — | Muestra la descripción detallada de un objeto que se encuentre en la sala o en el inventario. |
+| **Inventario** | `inventario` | `inv`, `i` | Muestra la lista de objetos que el jugador lleva consigo. |
+| **Guardar** | `guardar <archivo>` | — | Guarda el estado dinámico actual en el archivo indicado (ej: `guardar partida1.sav`). Preserva la ruta exacta ingresada. |
+| **Cargar** | `cargar <archivo>` | — | Restaura una partida guardada previa. Si el archivo no existe, está corrupto o es de otro mundo, informa el error de forma segura y continúa el juego. |
+| **Ayuda** | `ayuda` | — | Muestra en pantalla el resumen de comandos disponibles. |
+| **Salir** | `salir` | — | Termina la partida y sale del juego con código de salida limpio `0`. |
+
+> **Nota de usabilidad:** Los comandos que reciben objetos exigen el identificador exacto de 2 palabras (`tomar linterna`, no `"tomar la linterna"`), evitando ambigüedades con identificadores que contengan guiones bajos.
+
+---
+
+## 6. Ejecución de Pruebas Unitarias
 
 La suite de pruebas en `test/Spec.hs` verifica reconocimiento de comandos, movimiento, salidas bloqueadas, Variante 0 (Oscuridad), victoria y validación de mundos válidos e inválidos:
 
@@ -107,7 +128,7 @@ cabal test
 
 ---
 
-## 6. Estructura del Repositorio
+## 7. Estructura del Repositorio
 
 * `src/Motor/Tipos.hs`: Tipos algebraicos del dominio (`IdSala`, `IdObjeto`, `Direccion`, `Salida`, `Sala`, `Objeto`, `Meta`, `Mundo`, `Ubicacion`, `Estado`, `Comando`, `ErrorMundo`).
 * `src/Motor/Reconocedor.hs`: Tipo `Parser` sobre `ReadS`, instancias (`Functor`, `Applicative`, `Monad`, `Alternative`) y combinadores propios (`satisfy`, `char`, `cadena`, `muchos`, `alMenosUno`, `palabra`, `restoLinea`, `separadoPor`, `separadoPor1`).

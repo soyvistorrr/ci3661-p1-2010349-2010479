@@ -9,6 +9,7 @@ module Motor.Persistencia (
 ) where
 
 import System.Directory (doesFileExist)
+import System.IO (IOMode(ReadMode), hGetContents, hSetEncoding, openFile, utf8)
 import Text.Read (readMaybe)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -33,7 +34,9 @@ cargarMundoArchivo path = do
   if not existe
     then return (Left [ErrorSintaxis 0 ("El archivo no existe: " ++ path)])
     else do
-      contenido <- readFile path
+      h <- openFile path ReadMode
+      hSetEncoding h utf8
+      contenido <- hGetContents h
       return (leerMundo contenido)
 
 -- | Guarda el estado actual de la partida serializando el delta en disco
