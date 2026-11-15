@@ -1,0 +1,22 @@
+# Este mundo contiene 3 errores semanticos de objetos:
+# - V4: Una salida que requiere un objeto que no existe (llave_fantasma)
+# - V6: Una sala que contiene un objeto no definido (cristal_azul)
+# - V7: Un objeto colocado en mas de una sala (vela)
+
+MUNDO: Mansion de Objetos Ilusorios
+INICIO: sala_a
+META: llegar a sala_b
+---
+OBJETO: vela
+DESC: Una vela que parece estar en dos sitios a la vez.
+---
+SALA: sala_a
+DESC: La primera sala de la mansion.
+SALIDA: este -> sala_b requiere llave_fantasma
+OBJETO: vela
+OBJETO: cristal_azul
+---
+SALA: sala_b
+DESC: La segunda sala de la mansion.
+SALIDA: oeste -> sala_a
+OBJETO: vela

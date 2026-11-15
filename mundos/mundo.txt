@@ -1,0 +1,83 @@
+# ==============================================================================
+# Mundo Oficial: El Enigma de los Sótanos de Sartenejas
+# Proyecto 1 - CI-3661 (Sep-Dic 2026) - Universidad Simón Bolívar
+# Integrantes: Víctor Hernández (20-10349) y Ángel Pacheco (20-10479)
+# Variante 0: Oscuridad
+# ==============================================================================
+
+MUNDO: El Enigma de los Sótanos de Sartenejas
+INICIO: jardin_rectorado
+META: llevar titulo_academico a plaza_cubierta
+---
+OBJETO: carnet_estudiantil
+DESC: Tu carnet de la USB con el código 20-10479. Abre las puertas de acceso institucional.
+---
+OBJETO: linterna
+DESC: Una linterna halógena de mantenimiento. Su potente haz disipa las sombras.
+LUZ: si
+---
+OBJETO: mapa_antiguo
+DESC: Un plano arrugado del subsuelo del campus donde se aprecian viejas galerías de servicio.
+---
+OBJETO: palanca_hierro
+DESC: Una pesada barreta de hierro forjado, ideal para forzar rejas oxidadas.
+---
+OBJETO: llave_dorada
+DESC: Una elegante llave de latón con el logotipo labrado del árbol de Sartenejas.
+---
+OBJETO: fusible_respaldo
+DESC: Un fusible cerámico industrial de alto amperaje para los cuadros eléctricos.
+---
+OBJETO: titulo_academico
+DESC: Tu ansiado título universitario con sellos oficiales de la Secretaría.
+---
+SALA: jardin_rectorado
+DESC: Los jardines centrales frente al Rectorado. El sol matutino ilumina los árboles de Sartenejas.
+SALIDA: sur -> pasillo_central
+SALIDA: este -> caseta_vigilancia
+OBJETO: carnet_estudiantil
+---
+SALA: caseta_vigilancia
+DESC: Una caseta de vigilancia con monitores apagados y casilleros de seguridad abiertos.
+SALIDA: oeste -> jardin_rectorado
+OBJETO: linterna
+---
+SALA: pasillo_central
+DESC: Un largo pasillo techado con carteleras estudiantiles. Una escalera baja a los sótanos.
+SALIDA: norte -> jardin_rectorado
+SALIDA: abajo -> vestibulo_sotano requiere carnet_estudiantil
+OBJETO: mapa_antiguo
+---
+SALA: vestibulo_sotano
+DESC: El vestíbulo subterráneo bajo el edificio de Matemáticas y Sistemas. El ambiente es húmedo y frío.
+SALIDA: arriba -> pasillo_central
+SALIDA: este -> tunel_oscuro
+SALIDA: oeste -> deposito_herramientas
+---
+SALA: deposito_herramientas
+DESC: Un depósito repleto de estantes metálicos, cables y cajas polvorientas de talleres pasados.
+SALIDA: este -> vestibulo_sotano
+OBJETO: palanca_hierro
+---
+SALA: tunel_oscuro
+DESC: Un túnel estrecho y tétrico en las profundidades del campus. Las paredes gotean agua.
+OSCURA: si
+SALIDA: oeste -> vestibulo_sotano
+SALIDA: este -> laboratorio_oculto
+OBJETO: llave_dorada
+---
+SALA: laboratorio_oculto
+DESC: Un laboratorio clandestino de computación con viejas terminales PDP-11 aún zumbando suavemente.
+SALIDA: oeste -> tunel_oscuro
+SALIDA: norte -> boveda_seguridad requiere palanca_hierro
+OBJETO: fusible_respaldo
+---
+SALA: boveda_seguridad
+DESC: Una cámara acorazada protegida por gruesos muros de hormigón y una puerta de seguridad hacia el exterior.
+SALIDA: sur -> laboratorio_oculto
+SALIDA: este -> plaza_cubierta requiere llave_dorada
+OBJETO: titulo_academico
+---
+SALA: plaza_cubierta
+DESC: La emblemática Plaza Cubierta de la USB. El viento fresco anuncia el final exitoso de tu carrera.
+SALIDA: oeste -> boveda_seguridad

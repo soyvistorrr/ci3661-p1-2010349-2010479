@@ -1,0 +1,15 @@
+tomar carnet_estudiantil
+este
+tomar linterna
+oeste
+sur
+abajo
+oeste
+tomar palanca_hierro
+este
+este
+tomar llave_dorada
+este
+norte
+tomar titulo_academico
+este

@@ -1,0 +1,28 @@
+# Este mundo contiene 3 errores semanticos de alcanzabilidad y existencia:
+# - V8: META requiere un objeto inexistente (reliquia_perdida) y apunta a una sala inexistente (salon_dorado)
+# - V9: Una sala que no es alcanzable desde INICIO (sala_aislada)
+# - V10: Un objeto necesario para cruzar una salida pero no colocado en ninguna sala (llave_maestra)
+
+MUNDO: Fortaleza Inalcanzable
+INICIO: patio
+META: llevar reliquia_perdida a salon_dorado
+---
+OBJETO: llave_maestra
+DESC: Una llave maestra definida pero que nadie coloco en ninguna sala.
+---
+SALA: patio
+DESC: El patio de armas de la fortaleza.
+SALIDA: este -> pasillo_este
+---
+SALA: pasillo_este
+DESC: Un pasillo con una reja pesada.
+SALIDA: oeste -> patio
+SALIDA: norte -> gran_salon requiere llave_maestra
+---
+SALA: gran_salon
+DESC: El gran salon de banquetes.
+SALIDA: sur -> pasillo_este
+---
+SALA: sala_aislada
+DESC: Una camara secreta sin entradas desde el patio principal.
+SALIDA: sur -> patio
