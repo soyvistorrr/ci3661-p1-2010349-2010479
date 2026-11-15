@@ -1,4 +1,4 @@
-# Este mundo contiene 3 errores semanticos de alcanzabilidad y existencia:
+# Este mundo contiene 4 errores semanticos de alcanzabilidad y existencia:
 # - V8: META requiere un objeto inexistente (reliquia_perdida) y apunta a una sala inexistente (salon_dorado)
 # - V9: Una sala que no es alcanzable desde INICIO (sala_aislada)
 # - V10: Un objeto necesario para cruzar una salida pero no colocado en ninguna sala (llave_maestra)
