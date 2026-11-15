@@ -14,8 +14,8 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    ["-validar", ruta] -> modoValidar ruta
-    [ruta]             -> modoJuego ruta
+    [flag, ruta] | flag `elem` ["-validar", "--validar"] -> modoValidar ruta
+    [ruta]                                               -> modoJuego ruta
     _                  -> do
       putStrLn "Uso: aventura [-validar] <archivo-mundo>"
       exitWith (ExitFailure 1)
@@ -42,7 +42,12 @@ modoJuego path = do
       exitWith (ExitFailure 1)
     Right mundo -> do
       let est0 = estadoInicial mundo
+          sep  = replicate 40 '='
+      putStrLn ""
+      putStrLn sep
       putStrLn (tituloMundo mundo)
+      putStrLn sep
+      putStrLn ""
       let (msgs, _) = ejecutar Mirar est0
       mapM_ putStrLn msgs
       if verificarVictoria est0
