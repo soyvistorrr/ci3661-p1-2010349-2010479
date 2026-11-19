@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.39.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           aventura
+version:        0.1.0.0
+synopsis:       Motor de Aventuras de Texto en Haskell
+description:    Proyecto 1 para CI-3661 Laboratorio de Lenguajes de Programacion I (USB)
+author:         Victor Hernandez (20-10349) y Angel Pacheco (20-10479)
+maintainer:     20-10349@usb.ve, 20-10479@usb.ve
+copyright:      2026 Universidad Simon Bolivar
+build-type:     Simple
+
+library
+  exposed-modules:
+      Motor.Comandos
+      Motor.Mundo
+      Motor.Nucleo
+      Motor.Persistencia
+      Motor.Reconocedor
+      Motor.Tipos
+  other-modules:
+      Paths_aventura
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      base >=4.14 && <5
+    , containers >=0.6
+    , directory >=1.3
+    , filepath >=1.4
+  default-language: Haskell2010
+
+executable aventura
+  main-is: Main.hs
+  other-modules:
+      Paths_aventura
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aventura
+    , base >=4.14 && <5
+    , containers >=0.6
+    , directory >=1.3
+    , filepath >=1.4
+  default-language: Haskell2010
+
+test-suite aventura-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_aventura
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HUnit >=1.6
+    , aventura
+    , base >=4.14 && <5
+    , containers >=0.6
+    , directory >=1.3
+    , filepath >=1.4
+  default-language: Haskell2010
